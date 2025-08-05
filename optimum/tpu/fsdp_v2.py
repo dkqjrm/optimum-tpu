@@ -100,6 +100,13 @@ def get_fsdp_training_args(model: PreTrainedModel) -> Dict:
         if isinstance(model, LlamaForCausalLM) or isinstance(model, HFLlamaForCausalLLM):
             cls_to_wrap = "LlamaDecoderLayer"
             matched_model = True
+    elif model_type == 'qwen3':
+        from transformers import Qwen3ForCausalLM as HFQwen3ForCausalLM
+        from .modeling_qwen3 import Qwen3ForCausalLM
+
+        if isinstance(model, Qwen3ForCausalLM) or isinstance(model, HFQwen3ForCausalLM):
+            cls_to_wrap = "Qwen3DecoderLayer"
+            matched_model = True
 
     if not matched_model:
         raise ValueError(f"Model {model} configuration cannot be auto-generated, use get_fsdp_config instead.")

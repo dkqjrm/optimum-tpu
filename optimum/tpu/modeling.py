@@ -38,6 +38,10 @@ def config_name_to_class(pretrained_model_name_or_path: str):
 
         return MistralForCausalLM
     return BaseAutoModelForCausalLM
+    if config.model_type == "qwen3":
+        from .modeling_qwen3 import Qwen3ForCausalLM
+
+        return Qwen3ForCausalLM
 
 
 class AutoModelForCausalLM(BaseAutoModelForCausalLM):
