@@ -68,7 +68,7 @@ def main():
         fp16=config.get("fp16", False),
         bf16=config.get("bf16", True),
         max_grad_norm=config.get("max_grad_norm", 1.0),
-        model_max_length=config.get("model_max_length", 1024),
+        max_length=config.get("max_length", 1024),
         dataloader_num_workers=config.get("dataloader_num_workers", 4),
         dataloader_prefetch_factor=config.get("dataloader_prefetch_factor", 4),
         dataloader_pin_memory=config.get("dataloader_pin_memory", True),

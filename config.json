@@ -20,7 +20,6 @@
     "logging_steps": 50,
     "report_to": "wandb",
     "run_name": "dubbing_translation_qwen",
-    "model_max_length": 8192,
     "dataloader_num_workers": 4,
     "dataloader_prefetch_factor": 4,
     "dataloader_drop_last": true,
