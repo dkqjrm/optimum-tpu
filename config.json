@@ -32,5 +32,10 @@
     "packing": false,
     "completion_only_loss": true,
     "lora_save_steps": 10000,
-    "lora_save_epochs": null
+    "lora_save_epochs": null,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_r": 64,
+    "lora_bias": "none",
+    "lora_target_modules": "all-linear"
 }

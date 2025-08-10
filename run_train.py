@@ -36,11 +36,11 @@ def main():
     fsdp_training_args["fsdp_config"]["min_num_params"] = 0
     
     lora_config = LoraConfig(
-        lora_alpha=128,
-        lora_dropout=0.05,
-        r=256,
-        bias="none",
-        target_modules="all-linear",
+        lora_alpha=config.get("lora_alpha", 128),
+        lora_dropout=config.get("lora_dropout", 0.05),
+        r=config.get("lora_r", 256),
+        bias=config.get("lora_bias", "none"),
+        target_modules=config.get("lora_target_modules", "all-linear"),
         task_type="CAUSAL_LM",
     )
     
