@@ -37,7 +37,7 @@ def preprocess_korean_english_translation(sample, tokenizer):
     return sample
 
 
-def create_multi_clip_training_samples(dataset, tokenizer):
+def create_multi_clip_training_samples(dataset, tokenizer, seed=42):
     """
     Create multi-clip training samples by grouping consecutive clips from the same episode.
     This simulates real dubbing scenarios where translators work with multiple consecutive clips.
@@ -45,6 +45,9 @@ def create_multi_clip_training_samples(dataset, tokenizer):
     import random
     import json
     from collections import defaultdict
+    
+    # Set random seed for reproducible augmentation
+    random.seed(seed)
     
     # Group clips by episode
     episode_clips = defaultdict(list)
@@ -292,8 +295,8 @@ def load_single_dataset(data_path, tokenizer):
             # Convert to list for processing
             dataset_list = list(dataset)
             
-            # Create multi-clip samples
-            multi_clip_samples = create_multi_clip_training_samples(dataset_list, tokenizer)
+            # Create multi-clip samples with fixed seed
+            multi_clip_samples = create_multi_clip_training_samples(dataset_list, tokenizer, seed=42)
             
             # Convert back to Dataset
             data = Dataset.from_list(multi_clip_samples)
