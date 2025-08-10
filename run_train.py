@@ -64,7 +64,7 @@ def main():
         weight_decay=config.get("weight_decay", 0.01),
         warmup_steps=config.get("warmup_steps", 100),
         lr_scheduler_type=config.get("lr_scheduler_type", "cosine"),
-        gradient_checkpointing=config.get("gradient_checkpointing", True),
+        gradient_checkpointing=config.get("gradient_checkpointing", False),
         fp16=config.get("fp16", False),
         bf16=config.get("bf16", True),
         max_grad_norm=config.get("max_grad_norm", 1.0),
