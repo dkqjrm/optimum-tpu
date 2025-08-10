@@ -67,15 +67,21 @@ def create_multi_clip_training_samples(dataset, tokenizer):
                 # Get consecutive clips
                 window_clips = clips[start_idx:start_idx + window_size]
                 
-                # Create multi-clip training sample
-                training_sample = create_multi_clip_sample(window_clips, tokenizer)
-                if training_sample:
-                    training_samples.append(training_sample)
+                # Create multiple variations for each window:
+                # 1. Pure original (no existing translations) - ALWAYS included
+                training_sample_pure = create_multi_clip_sample(window_clips, tokenizer, force_no_existing=True)
+                if training_sample_pure:
+                    training_samples.append(training_sample_pure)
+                
+                # 2. Mixed scenario (some existing translations) - RANDOMLY included
+                training_sample_mixed = create_multi_clip_sample(window_clips, tokenizer, force_no_existing=False)
+                if training_sample_mixed:
+                    training_samples.append(training_sample_mixed)
     
     return training_samples
 
 
-def create_multi_clip_sample(window_clips, tokenizer):
+def create_multi_clip_sample(window_clips, tokenizer, force_no_existing=None):
     """
     Create a single training sample from multiple consecutive clips.
     """
@@ -187,8 +193,16 @@ Output Specification
             }
         }
         
-        # Randomly decide whether to include existing translation (simulate partial translation scenarios)
-        include_existing = random.random() < 0.3  # 30% chance of having existing translation
+        # Decide whether to include existing translation
+        if force_no_existing is True:
+            # Force pure original - no existing translations
+            include_existing = False
+        elif force_no_existing is False:
+            # Mixed scenario - randomly include some existing translations
+            include_existing = random.random() < 0.3  # 30% chance of having existing translation
+        else:
+            # Legacy behavior (shouldn't be used now)
+            include_existing = random.random() < 0.3
         if include_existing:
             clip["target"] = {"text": english_text}
         
