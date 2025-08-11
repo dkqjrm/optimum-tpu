@@ -31,30 +31,101 @@ def main():
     if tokenizer.chat_template and "{% generation %}" not in tokenizer.chat_template:
         print("🔧 Fixing Qwen3 chat template for assistant_only_loss support...")
         
-        # Add generation keyword before assistant content
         original_template = tokenizer.chat_template
         
-        # Find the assistant response section and add {% generation %}
-        # Look for the pattern where assistant content starts
-        if "<|im_start|>assistant" in original_template:
-            # Replace the think section with generation keyword
-            fixed_template = original_template.replace(
-                '{%- if enable_thinking is defined and enable_thinking is false %}\n        {{- \'<think>\\n\\n</think>\\n\\n\' }}\n    {%- endif %}',
-                '{% generation %}'
-            )
-            
-            # Also handle the case without thinking
-            if '{% generation %}' not in fixed_template:
-                # Add generation keyword right after <|im_start|>assistant\n
-                fixed_template = original_template.replace(
-                    '{{- \'<|im_start|>assistant\\n\' }}',
-                    '{{- \'<|im_start|>assistant\\n\' }}{% generation %}'
-                )
-            
-            tokenizer.chat_template = fixed_template
-            print("✅ Fixed Qwen3 chat template for assistant_only_loss support")
-        else:
-            print("❌ Could not find assistant pattern in chat template")
+        # Find and replace the assistant-specific section
+        # Look for: {%- elif message.role == "assistant" %}
+        # Add generation right after <|im_start|>assistant\n is output
+        
+        # Replace the entire assistant block with generation-wrapped version
+        assistant_block_old = """{%- elif message.role == "assistant" %}
+        {%- set reasoning_content = '' %}
+        {%- if message.reasoning_content is string %}
+            {%- set reasoning_content = message.reasoning_content %}
+        {%- else %}
+            {%- if '</think>' in content %}
+                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}
+                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}
+            {%- endif %}
+        {%- endif %}
+        {%- if loop.index0 > ns.last_query_index %}
+            {%- if loop.last or (not loop.last and reasoning_content) %}
+                {{- '<|im_start|>' + message.role + '\\n<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' + content.lstrip('\\n') }}
+            {%- else %}
+                {{- '<|im_start|>' + message.role + '\\n' + content }}
+            {%- endif %}
+        {%- else %}
+            {{- '<|im_start|>' + message.role + '\\n' + content }}
+        {%- endif %}
+        {%- if message.tool_calls %}
+            {%- for tool_call in message.tool_calls %}
+                {%- if (loop.first and content) or (not loop.first) %}
+                    {{- '\\n' }}
+                {%- endif %}
+                {%- if tool_call.function %}
+                    {%- set tool_call = tool_call.function %}
+                {%- endif %}
+                {{- '<tool_call>\\n{\"name\": \"' }}
+                {{- tool_call.name }}
+                {{- '\", \"arguments\": ' }}
+                {%- if tool_call.arguments is string %}
+                    {{- tool_call.arguments }}
+                {%- else %}
+                    {{- tool_call.arguments | tojson }}
+                {%- endif %}
+                {{- '}\\n</tool_call>' }}
+            {%- endfor %}
+        {%- endif %}
+        {{- '<|im_end|>\\n' }}"""
+        
+        assistant_block_new = """{%- elif message.role == "assistant" %}
+        {%- set reasoning_content = '' %}
+        {%- if message.reasoning_content is string %}
+            {%- set reasoning_content = message.reasoning_content %}
+        {%- else %}
+            {%- if '</think>' in content %}
+                {%- set reasoning_content = content.split('</think>')[0].rstrip('\\n').split('<think>')[-1].lstrip('\\n') %}
+                {%- set content = content.split('</think>')[-1].lstrip('\\n') %}
+            {%- endif %}
+        {%- endif %}
+        {{- '<|im_start|>' + message.role + '\\n' }}
+        {% generation %}
+        {%- if reasoning_content %}
+            {{- '<think>\\n' + reasoning_content.strip('\\n') + '\\n</think>\\n\\n' }}
+        {%- endif %}
+        {{- content.lstrip('\\n') }}
+        {%- if message.tool_calls %}
+            {%- for tool_call in message.tool_calls %}
+                {%- if (loop.first and content) or (not loop.first) %}
+                    {{- '\\n' }}
+                {%- endif %}
+                {%- if tool_call.function %}
+                    {%- set tool_call = tool_call.function %}
+                {%- endif %}
+                {{- '<tool_call>\\n{\"name\": \"' }}
+                {{- tool_call.name }}
+                {{- '\", \"arguments\": ' }}
+                {%- if tool_call.arguments is string %}
+                    {{- tool_call.arguments }}
+                {%- else %}
+                    {{- tool_call.arguments | tojson }}
+                {%- endif %}
+                {{- '}\\n</tool_call>' }}
+            {%- endfor %}
+        {%- endif %}
+        {% endgeneration %}
+        {{- '<|im_end|>\\n' }}"""
+        
+        fixed_template = original_template.replace(assistant_block_old, assistant_block_new)
+        
+        # Handle add_generation_prompt case
+        fixed_template = fixed_template.replace(
+            "{{- '<|im_start|>assistant\\n' }}",
+            "{{- '<|im_start|>assistant\\n' }}{% generation %}"
+        )
+        
+        tokenizer.chat_template = fixed_template
+        print("✅ Fixed Qwen3 chat template with {% generation %}/{% endgeneration %} blocks")
     
     model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16)
     
