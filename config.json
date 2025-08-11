@@ -1,6 +1,6 @@
 {
     "llm_model_name_or_path": "/home/hyun/Qwen3-0.6B",
-    "train_dataset": "huggingface:dkqjrm/korean-english-translation-dataset:train",
+    "train_dataset": "overfit-test:train",
     "eval_dataset": null,
     "output_dir": "./logs/dubbing_translation_training",
     "resume_from_checkpoint": null,
@@ -32,7 +32,7 @@
     "dataset_text_field": "text",
     "max_length": 4096,
     "packing": false,
-    "completion_only_loss": true,
+    "assistant_only_loss": true,
     "lora_save_steps": 5000,
     "lora_save_epochs": null,
     "lora_alpha": 32,

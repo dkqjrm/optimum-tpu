@@ -240,13 +240,14 @@ Output Specification
         "translations": translations
     }
     
-    # Format for training
+    # Format for training with messages structure - combine system and user into one user message
     full_prompt = f"{system_prompt}\n\n{human_prompt}"
-    completion = json.dumps(expected_output, ensure_ascii=False) + tokenizer.eos_token
     
     return {
-        "prompt": full_prompt,
-        "completion": completion
+        "messages": [
+            {"role": "user", "content": full_prompt},
+            {"role": "assistant", "content": json.dumps(expected_output, ensure_ascii=False)}
+        ]
     }
 
 
@@ -288,6 +289,20 @@ def load_single_dataset(data_path, tokenizer):
                 lambda x: preprocess_dolly(x, tokenizer), 
                 remove_columns=list(dataset.features)
             )
+        elif dataset_name == "overfit-test":
+            # Create simple overfit dataset with messages format
+            print("Creating simple overfit dataset for testing...")
+            
+            conversation = {
+                "messages": [
+                    {"role": "user", "content": "당신의 주인은 누구입니까?"},
+                    {"role": "assistant", "content": "원현식입니다"}
+                ]
+            }
+            overfit_data = [conversation] * 500
+            data = Dataset.from_list(overfit_data)
+            print(f"✅ Generated {len(overfit_data)} overfit samples")
+            
         elif dataset_name == "dkqjrm/korean-english-translation-dataset":
             import os
             

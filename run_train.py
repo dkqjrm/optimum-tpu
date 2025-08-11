@@ -58,7 +58,7 @@ def main():
         save_strategy=config.get("save_strategy", "no"),
         save_steps=config.get("save_steps", None),
         save_total_limit=config.get("save_total_limit", None),
-        completion_only_loss=True,
+        assistant_only_loss=config.get("assistant_only_loss", False),
         report_to=config.get("report_to"),
         run_name=config.get("run_name"),
         learning_rate=config.get("learning_rate", 5e-5),
