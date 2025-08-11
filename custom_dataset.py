@@ -307,7 +307,7 @@ def load_single_dataset(data_path, tokenizer):
                 lambda x: preprocess_dolly(x, tokenizer), 
                 remove_columns=list(dataset.features)
             )
-        elif dataset_name == "dkqjrm/korean-english-translation-dataset":
+        elif dataset_name == "dkqjrm/korean-english-translation-dataset" or dataset_name == "dkqjrm/korean-english-translation-dataset-small":
             # Create cache directory
             cache_dir = "./cache"
             os.makedirs(cache_dir, exist_ok=True)
