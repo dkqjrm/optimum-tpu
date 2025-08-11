@@ -26,6 +26,36 @@ def main():
     
     model_id = config["llm_model_name_or_path"]
     tokenizer = AutoTokenizer.from_pretrained(model_id)
+    
+    # Fix Qwen3 chat template for assistant_only_loss support
+    if tokenizer.chat_template and "{% generation %}" not in tokenizer.chat_template:
+        print("🔧 Fixing Qwen3 chat template for assistant_only_loss support...")
+        
+        # Add generation keyword before assistant content
+        original_template = tokenizer.chat_template
+        
+        # Find the assistant response section and add {% generation %}
+        # Look for the pattern where assistant content starts
+        if "<|im_start|>assistant" in original_template:
+            # Replace the think section with generation keyword
+            fixed_template = original_template.replace(
+                '{%- if enable_thinking is defined and enable_thinking is false %}\n        {{- \'<think>\\n\\n</think>\\n\\n\' }}\n    {%- endif %}',
+                '{% generation %}'
+            )
+            
+            # Also handle the case without thinking
+            if '{% generation %}' not in fixed_template:
+                # Add generation keyword right after <|im_start|>assistant\n
+                fixed_template = original_template.replace(
+                    '{{- \'<|im_start|>assistant\\n\' }}',
+                    '{{- \'<|im_start|>assistant\\n\' }}{% generation %}'
+                )
+            
+            tokenizer.chat_template = fixed_template
+            print("✅ Fixed Qwen3 chat template for assistant_only_loss support")
+        else:
+            print("❌ Could not find assistant pattern in chat template")
+    
     model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16)
     
     # Load train and eval datasets
