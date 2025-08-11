@@ -10,16 +10,19 @@ def preprocess_dolly(sample, tokenizer):
     context = f"### Context\n{sample['context']}" if len(sample["context"]) > 0 else None
     answer_prompt = "### Answer\n"
     
-    # Prompt part (without answer)
+    # User message (prompt without answer)
     prompt_parts = [instruction, context, answer_prompt] if context else [instruction, answer_prompt]
-    prompt = "\n\n".join([i for i in prompt_parts if i is not None])
+    user_content = "\n\n".join([i for i in prompt_parts if i is not None])
     
-    # Completion part (answer only)
-    completion = sample['response'] + tokenizer.eos_token
+    # Assistant message (response)
+    assistant_content = sample['response']
     
-    sample["prompt"] = prompt
-    sample["completion"] = completion
-    return sample
+    return {
+        "messages": [
+            {"role": "user", "content": user_content},
+            {"role": "assistant", "content": assistant_content}
+        ]
+    }
 
 
 def preprocess_korean_english_translation(sample, tokenizer):
@@ -28,15 +31,18 @@ def preprocess_korean_english_translation(sample, tokenizer):
     korean_text = f"### Korean\n{sample['korean']}"
     answer_prompt = "### English\n"
     
-    # Prompt part (without answer)
-    prompt = f"{instruction}\n\n{korean_text}\n\n{answer_prompt}"
+    # User message (prompt without answer)
+    user_content = f"{instruction}\n\n{korean_text}\n\n{answer_prompt}"
     
-    # Completion part (English translation)
-    completion = sample['english'] + tokenizer.eos_token
+    # Assistant message (English translation)
+    assistant_content = sample['english']
     
-    sample["prompt"] = prompt
-    sample["completion"] = completion
-    return sample
+    return {
+        "messages": [
+            {"role": "user", "content": user_content},
+            {"role": "assistant", "content": assistant_content}
+        ]
+    }
 
 
 def create_multi_clip_training_samples(dataset, tokenizer, seed=42):

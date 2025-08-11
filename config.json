@@ -32,7 +32,7 @@
     "dataset_text_field": "text",
     "max_length": 4096,
     "packing": false,
-    "assistant_only_loss": true,
+    "completion_only_loss": true,
     "lora_save_steps": 5000,
     "lora_save_epochs": null,
     "lora_alpha": 32,
