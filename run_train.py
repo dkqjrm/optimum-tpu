@@ -92,9 +92,6 @@ def main():
         eval_dataset=eval_data,
         args=training_args,
         peft_config=lora_config,
-        dataset_kwargs={
-            "cache_dir": "./cache"
-        }
     )
     
     # Add LoRA callback
