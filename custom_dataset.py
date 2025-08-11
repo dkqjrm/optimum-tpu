@@ -61,7 +61,6 @@ def create_multi_clip_training_samples(dataset, tokenizer, seed=42):
         episode_clips[episode].append((i, sample))
     
     training_samples = []
-    ㅇ
     for episode, clips in episode_clips.items():
         clips.sort(key=lambda x: x[1].get('start_seconds', 0))  # Sort by timestamp
         
