@@ -338,8 +338,14 @@ def load_single_dataset(data_path, tokenizer):
                 except Exception as e:
                     print(f"⚠️ Cache saving failed: {e}")
             
-            # Convert back to Dataset
+            # Convert back to Dataset with caching enabled
             data = Dataset.from_list(multi_clip_samples)
+            
+            # Enable caching for this dataset
+            data = data.map(
+                lambda x: x,  # Identity function
+                cache_file_name=f"./cache/{cache_key}_tokenized.arrow"
+            )
         else:
             # For other datasets, use as-is (SFTTrainer will handle)
             print(f"No custom preprocessing for {dataset_name}, using default SFTTrainer processing")
