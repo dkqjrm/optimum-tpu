@@ -270,7 +270,22 @@ def load_single_dataset(data_path, tokenizer):
     """
     Load a single dataset and apply preprocessing
     """
-    if data_path.startswith("huggingface:"):
+    # Handle special overfit-test dataset
+    if data_path.startswith("overfit-test"):
+        print("Creating simple overfit dataset for testing...")
+        
+        conversation = {
+            "messages": [
+                {"role": "user", "content": "당신의 주인은 누구입니까?"},
+                {"role": "assistant", "content": "원현식입니다"}
+            ]
+        }
+        overfit_data = [conversation] * 500
+        data = Dataset.from_list(overfit_data)
+        print(f"✅ Generated {len(overfit_data)} overfit samples")
+        return data
+    
+    elif data_path.startswith("huggingface:"):
         dataset_info = data_path.replace("huggingface:", "").split(":")
         
         if len(dataset_info) == 2:
@@ -288,20 +303,6 @@ def load_single_dataset(data_path, tokenizer):
                 lambda x: preprocess_dolly(x, tokenizer), 
                 remove_columns=list(dataset.features)
             )
-        elif dataset_name == "overfit-test":
-            # Create simple overfit dataset with messages format
-            print("Creating simple overfit dataset for testing...")
-            
-            conversation = {
-                "messages": [
-                    {"role": "user", "content": "당신의 주인은 누구입니까?"},
-                    {"role": "assistant", "content": "원현식입니다"}
-                ]
-            }
-            overfit_data = [conversation] * 500
-            data = Dataset.from_list(overfit_data)
-            print(f"✅ Generated {len(overfit_data)} overfit samples")
-            
         elif dataset_name == "dkqjrm/korean-english-translation-dataset":
             # Create cache directory
             cache_dir = "./cache"
