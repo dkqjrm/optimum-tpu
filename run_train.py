@@ -49,7 +49,7 @@ def main():
         per_device_train_batch_size=config.get("per_device_train_batch_size", 32),
         per_device_eval_batch_size=config.get("per_device_eval_batch_size", 16),
         gradient_accumulation_steps=config.get("gradient_accumulation_steps", 1),
-        max_steps=config.get("max_steps", None),
+        max_steps=config.get("max_steps", -1),
         num_train_epochs=config.get("num_train_epochs", 3),
         output_dir=config["output_dir"],
         optim="adafactor",
