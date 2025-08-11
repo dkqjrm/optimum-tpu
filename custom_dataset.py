@@ -289,61 +289,29 @@ def load_single_dataset(data_path, tokenizer):
                 remove_columns=list(dataset.features)
             )
         elif dataset_name == "dkqjrm/korean-english-translation-dataset":
-            import pickle
-            import hashlib
             import os
             
             # Create cache directory
             cache_dir = "./cache"
             os.makedirs(cache_dir, exist_ok=True)
             
-            # Create cache key based on dataset name, split, and preprocessing version
-            cache_key = f"{dataset_name.replace('/', '_')}_{split}_v2"
-            cache_file = os.path.join(cache_dir, f"{cache_key}.pkl")
+            print("Creating multi-clip dubbing translation samples...")
             
-            print(f"Checking cache for dubbing translation samples: {cache_file}")
+            # Convert to list for processing
+            dataset_list = list(dataset)
             
-            if os.path.exists(cache_file):
-                print("✅ Loading cached multi-clip samples...")
-                try:
-                    with open(cache_file, 'rb') as f:
-                        multi_clip_samples = pickle.load(f)
-                    print(f"✅ Loaded {len(multi_clip_samples)} cached samples!")
-                except Exception as e:
-                    print(f"❌ Cache loading failed: {e}")
-                    print("🔄 Regenerating samples...")
-                    # Fall back to regeneration
-                    dataset_list = list(dataset)
-                    multi_clip_samples = create_multi_clip_training_samples(dataset_list, tokenizer, seed=42)
-                    
-                    # Save to cache
-                    print("💾 Saving to cache...")
-                    with open(cache_file, 'wb') as f:
-                        pickle.dump(multi_clip_samples, f)
-            else:
-                print("🔄 Creating multi-clip dubbing translation samples...")
-                
-                # Convert to list for processing
-                dataset_list = list(dataset)
-                
-                # Create multi-clip samples with fixed seed
-                multi_clip_samples = create_multi_clip_training_samples(dataset_list, tokenizer, seed=42)
-                
-                # Save to cache
-                print(f"💾 Saving {len(multi_clip_samples)} samples to cache...")
-                try:
-                    with open(cache_file, 'wb') as f:
-                        pickle.dump(multi_clip_samples, f)
-                    print("✅ Cache saved successfully!")
-                except Exception as e:
-                    print(f"⚠️ Cache saving failed: {e}")
+            # Create multi-clip samples with fixed seed (ensures reproducibility)
+            multi_clip_samples = create_multi_clip_training_samples(dataset_list, tokenizer, seed=42)
             
-            # Convert back to Dataset with caching enabled
+            print(f"✅ Generated {len(multi_clip_samples)} training samples")
+            
+            # Convert back to Dataset with caching enabled for tokenization
             data = Dataset.from_list(multi_clip_samples)
             
-            # Enable caching for this dataset
+            # Enable caching for tokenization (this will cache the tokenized results)
+            cache_key = f"{dataset_name.replace('/', '_')}_{split}_v2"
             data = data.map(
-                lambda x: x,  # Identity function
+                lambda x: x,  # Identity function - but enables caching
                 cache_file_name=f"./cache/{cache_key}_tokenized.arrow"
             )
         else:
