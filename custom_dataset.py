@@ -1,6 +1,8 @@
 from datasets import load_dataset, Dataset
 import json
 import os
+import random
+from collections import defaultdict
 
 
 def preprocess_dolly(sample, tokenizer):
@@ -42,9 +44,7 @@ def create_multi_clip_training_samples(dataset, tokenizer, seed=42):
     Create multi-clip training samples by grouping consecutive clips from the same episode.
     This simulates real dubbing scenarios where translators work with multiple consecutive clips.
     """
-    import random
-    import json
-    from collections import defaultdict
+    
     
     # Set random seed for reproducible augmentation
     random.seed(seed)
@@ -56,7 +56,7 @@ def create_multi_clip_training_samples(dataset, tokenizer, seed=42):
         episode_clips[episode].append((i, sample))
     
     training_samples = []
-    
+    ㅇ
     for episode, clips in episode_clips.items():
         clips.sort(key=lambda x: x[1].get('start_seconds', 0))  # Sort by timestamp
         
@@ -88,8 +88,7 @@ def create_multi_clip_sample(window_clips, tokenizer, force_no_existing=None):
     """
     Create a single training sample from multiple consecutive clips.
     """
-    import random
-    import json
+
     
     if not window_clips:
         return None
@@ -304,8 +303,6 @@ def load_single_dataset(data_path, tokenizer):
             print(f"✅ Generated {len(overfit_data)} overfit samples")
             
         elif dataset_name == "dkqjrm/korean-english-translation-dataset":
-            import os
-            
             # Create cache directory
             cache_dir = "./cache"
             os.makedirs(cache_dir, exist_ok=True)
