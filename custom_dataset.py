@@ -172,7 +172,6 @@ Output Specification
    BEFORE generating translations, count the <original_clips> tags to verify you have exactly {window_size} segments.
    Return exactly this JSON—no extra keys, no commentary:  
     {{
-    "context_analysis": "analysis for dubbing optimized translations",
     "translations": [
         {{"segment_id": 1, "translation": "segment 1 translation"}},
         {{"segment_id": 2, "translation": "segment 2 translation"}},
@@ -239,7 +238,6 @@ Output Specification
     
     # Create expected JSON output
     expected_output = {
-        "context_analysis": f"Analysis for dubbing optimized translations with {window_size} consecutive segments maintaining narrative flow and speaker consistency",
         "translations": translations
     }
     
@@ -322,15 +320,9 @@ def load_single_dataset(data_path, tokenizer):
             
             print(f"✅ Generated {len(multi_clip_samples)} training samples")
             
-            # Convert back to Dataset with caching enabled for tokenization
+            # Convert back to Dataset - no map() calls to avoid caching
             data = Dataset.from_list(multi_clip_samples)
-            
-            # Enable caching for tokenization (this will cache the tokenized results)
-            cache_key = f"{dataset_name.replace('/', '_')}_{split}_v2"
-            data = data.map(
-                lambda x: x,  # Identity function - but enables caching
-                cache_file_name=f"./cache/{cache_key}_tokenized.arrow"
-            )
+            print("✅ Dataset ready (no caching, no map calls)")
         else:
             # For other datasets, use as-is (SFTTrainer will handle)
             print(f"No custom preprocessing for {dataset_name}, using default SFTTrainer processing")
